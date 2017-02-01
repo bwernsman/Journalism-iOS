@@ -18,23 +18,24 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        // Set up blur
-        let blurEffect = UIBlurEffect(style: .light)
-        let blurEffectView = UIVisualEffectView(effect: blurEffect)
-        blurEffectView.frame = headerView.bounds
-        //headerView.insertSubview(blurEffectView, at: 1)
+        //Make sure that the menu bar settings are still easy to see
+        headerView.alpha = 0.8
         
-        //headerView.alpha = 0.3
-        
-        headerView.addSubview(blurEffectView)
-        
+        //Add add Austin pin
         let austin = MKPointAnnotation()
         austin.coordinate = CLLocationCoordinate2DMake(30.25, -97.75)
         austin.title = "Austin"
         mapView.addAnnotation(austin)
         
+        //Add UT Tower Pin Pin
+        let utTower = MKPointAnnotation()
+        utTower.coordinate = CLLocationCoordinate2DMake(30.2862176, -97.739388)
+        utTower.title = "UT Tower"
+        mapView.addAnnotation(utTower)
+        
         isAuthorizedtoGetUserLocation()
         
+        //If user enabled location, get it
         if CLLocationManager.locationServicesEnabled() {
             locationManager.delegate = self
             locationManager.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
@@ -52,18 +53,15 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
     //this method will be called each time when a user change his location access preference.
     func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
         if status == .authorizedWhenInUse {
-            print("User allowed us to access location")
-            //do whatever init activities here.
-            
-            locationManager.startUpdatingLocation()
+            print("User allowed location")
+
+            locationManager.requestLocation()
         }
     }
     
-    
-    //this method is called by the framework on         locationManager.requestLocation();
+    //Called from "requestLocation()"
     func locationManager(_ manager: CLLocationManager, didUpdateLocations locations: [CLLocation]) {
         print("Did location updates is called")
-        //store the user location here to firebase or somewhere
         
         mapView.showsUserLocation = true
         
@@ -71,6 +69,10 @@ class ViewController: UIViewController, CLLocationManagerDelegate {
         print(locations[0].coordinate.longitude)
         
         locationManager.stopUpdatingLocation()
+        
+        let span = MKCoordinateSpanMake(0.05, 0.05)
+        let region = MKCoordinateRegion(center: locations[0].coordinate, span: span)
+        mapView.setRegion(region, animated: true)
     }
     
     func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
